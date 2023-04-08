@@ -31,8 +31,8 @@ def generate_chat_response_stream(messages):
     )
 
     for chunk in response:
-        print(chunk)
-        print("=======")
+        # print(chunk)
+        # print("=======")
         choice = chunk['choices'][0]
         if "delta" in choice:
             delta = choice["delta"]
@@ -44,7 +44,7 @@ def generate_chat_response_stream(messages):
             else:
                 if "content" in delta:
                     content = delta["content"]
-                    yield "data: {}\n\n".format(json.dumps({"text": content, "created": created}))
+                    yield "data: {}\n\n".format(json.dumps({"text": content}))
 
 
 @app.route("/chat_stream")
