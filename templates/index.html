@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat with GPT-3.5 Turbo</title>
+</head>
+<body>
+<h1>Chat with GPT-3.5 Turbo</h1>
+<div id="output"></div>
+<input type="text" id="input" placeholder="Type your message here..." autofocus>
+<button id="send">Send</button>
+
+<script>
+    const output = document.getElementById("output");
+    const input = document.getElementById("input");
+    const send = document.getElementById("send");
+
+    const getAuthorizationHeader = () => {
+    const secretKey = getSecretKey();
+    return secretKey ? `Bearer ${secretKey}` : "";
+};
+    const getSecretKey = () => {
+    const secretKey = document.cookie.match(/secretkey=([^;]+)/);
+    return secretKey && secretKey[1];
+};
+    function sendMessage() {
+        const message = input.value.trim();
+        if (message.length === 0) {
+            return;
+        }
+
+        input.disabled = true;
+        send.disabled = true;
+
+        const source = new EventSource(`/chat_stream?message=${encodeURIComponent(message)}&api_key=${encodeURIComponent(getAuthorizationHeader())}`, {
+            withCredentials: false,
+            bufferSize: 1024 * 1024
+        });  // 增加 bufferSize 参数的值
+
+        source.onmessage = function (event) {
+            const data = JSON.parse(event.data);
+            const content = data.text;
+            output.innerHTML += `<div>User: ${message}</div>`;
+            output.innerHTML += `<div>Bot: ${content}</div>`;
+            input.disabled = false;
+            send.disabled = false;
+        };
+
+        source.onerror = function () {
+            source.close();
+            input.disabled = false;
+            send.disabled = false;
+        };
+
+        input.value = "";
+    }
+
+    send.addEventListener("click", sendMessage);
+    input.addEventListener("keydown", function (event) {
+        if (event.key === "Enter") {
+            event.preventDefault();
+            sendMessage();
+        }
+    });
+</script>
+</body>
+</html>
