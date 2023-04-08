@@ -11,8 +11,7 @@ CORS(app)
 app.config["response_buffer_size"] = 100 * 1024 * 1024  # 增加缓冲区大小
 
 
-# 设置你的 OpenAI API 密钥
-openai.api_key = "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"
+
 
 
 @app.route("/")
@@ -51,9 +50,17 @@ def generate_chat_response_stream(messages):
 @app.route("/chat_stream")
 def chat_stream():
     message = request.args.get("message")
+    api_key = request.args.get("api_key")
+
+    api_key = api_key.replace("Bearer ", "")
+
+    # 设置你的 OpenAI API 密钥
+    openai.api_key = api_key
+    print("key:"+api_key)
+
     response_stream = generate_chat_response_stream(message)
     return Response(stream_with_context(response_stream), content_type="text/event-stream")
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=False)
